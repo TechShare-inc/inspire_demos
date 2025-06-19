@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Template</title>
+    <link rel="stylesheet" href="../style/style.css">
+    <script>
+        // This script will update the document name in the footer when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the current document filename
+            const docPath = window.location.pathname;
+            const docName = docPath.split('/').pop().replace('.html', '');
+            
+            // Update the document name in the footer
+            const docNameElement = document.querySelector('.footer-doc-name');
+            if (docNameElement) {
+                docNameElement.textContent = docName;
+            }
+            
+            // Set the current date for the ToC page
+            const tocPageElement = document.querySelector('.toc-page');
+            if (tocPageElement) {
+                const today = new Date();
+                const dateString = today.toLocaleDateString();
+                tocPageElement.setAttribute('data-date', dateString);
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Table of Contents Page -->
+    <div class="toc-page" data-date="">
+        <h1 class="toc-page-title">Contents</h1>
+        <div class="toc">
+            <div class="toc-title">Table of Contents</div>
+            <ul>
+                <li><a href="#section1">1. Introduction</a></li>
+                <li><a href="#section2">2. Getting Started</a>
+                    <ul>
+                        <li><a href="#section2-1">2.1 Installation</a></li>
+                        <li><a href="#section2-2">2.2 Configuration</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section3">3. Usage</a></li>
+                <li><a href="#section4">4. Advanced Topics</a></li>
+                <li><a href="#section5">5. References</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- Document Content -->
+    <h1 id="section1">Introduction</h1>
+    <p>This is a template document that demonstrates the use of the improved styles.</p>
+    
+    <h2 id="section2">Getting Started</h2>
+    <p>This section provides information on getting started with the project.</p>
+    
+    <h3 id="section2-1">Installation</h3>
+    <p>Installation instructions would go here.</p>
+    
+    <h3 id="section2-2">Configuration</h3>
+    <p>Configuration instructions would go here.</p>
+    
+    <h2 id="section3">Usage</h2>
+    <p>Usage information would go here.</p>
+    
+    <h2 id="section4">Advanced Topics</h2>
+    <p>Advanced topics would be covered here.</p>
+    
+    <h2 id="section5">References</h2>
+    <p>References would be listed here.</p>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-doc-name">Document Name</div>
+        <img class="footer-logo" src="../style/TechShare_logo.svg" alt="TechShare Logo">
+    </div>
+</body>
+</html>

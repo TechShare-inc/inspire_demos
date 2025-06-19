@@ -1,3 +1,15 @@
+<link rel="stylesheet" href="../../style/style.css">
+
+<div class="toc-page" data-date="">
+    <h1 class="toc-page-title">ROS2 Modbus</h1>
+    <div class="toc">
+        <div class="toc-title">Table of Contents</div>
+        <div id="generated-toc"></div>
+    </div>
+</div>
+
+<div class="page-break"></div>
+
 # ROS2 Modbus Usage Guide
 
 ---
@@ -335,3 +347,83 @@ This document explains the setup and usage of Inspire-Robots' multi-fingered han
 - Examples of service calls from scripts
 
 For more detailed information and updates, please refer to the [Inspire-Robots Official Website](https://www.inspire-robots.com/) and [TechShare-Inspire](https://techshare.co.jp/product/other/dexterous-hands/).
+
+<!-- Footer -->
+<div class="footer">
+    <div class="footer-doc-name">Modbus Usage Guide</div>
+    <img class="footer-logo" src="../../style/TechShare_logo.svg" alt="TechShare Logo">
+</div>
+
+<script>
+    // Update document name in footer
+    document.addEventListener('DOMContentLoaded', function() {
+        const docPath = window.location.pathname;
+        const docName = docPath.split('/').pop().replace('.md', '').replace('.en', '');
+        const docNameElement = document.querySelector('.footer-doc-name');
+        if (docNameElement) {
+            docNameElement.textContent = docName.replace('_', ' ');
+        }
+        
+        // Set current date
+        const tocPageElement = document.querySelector('.toc-page');
+        if (tocPageElement) {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US');
+            tocPageElement.setAttribute('data-date', dateString);
+        }
+        
+        // Generate TOC
+        const headings = document.querySelectorAll('h2, h3, h4');
+        const tocContainer = document.getElementById('generated-toc');
+        if (tocContainer) {
+            const toc = document.createElement('ul');
+            
+            headings.forEach(function(heading) {
+                if (!heading.id) {
+                    heading.id = heading.textContent.toLowerCase().replace(/\s+/g, '-');
+                }
+                
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = '#' + heading.id;
+                link.textContent = heading.textContent;
+                listItem.appendChild(link);
+                
+                if (heading.tagName === 'H2') {
+                    toc.appendChild(listItem);
+                } else if (heading.tagName === 'H3') {
+                    // Find the last H2 list item and append to its UL or create one
+                    const lastH2Item = Array.from(toc.children).pop();
+                    if (lastH2Item) {
+                        let ulH3 = lastH2Item.querySelector('ul');
+                        if (!ulH3) {
+                            ulH3 = document.createElement('ul');
+                            lastH2Item.appendChild(ulH3);
+                        }
+                        ulH3.appendChild(listItem);
+                    }
+                } else if (heading.tagName === 'H4') {
+                    // Find the last H2 list item
+                    const lastH2Item = Array.from(toc.children).pop();
+                    if (lastH2Item) {
+                        // Find the last H3 list item
+                        const ulH3 = lastH2Item.querySelector('ul');
+                        if (ulH3) {
+                            const lastH3Item = Array.from(ulH3.children).pop();
+                            if (lastH3Item) {
+                                let ulH4 = lastH3Item.querySelector('ul');
+                                if (!ulH4) {
+                                    ulH4 = document.createElement('ul');
+                                    lastH3Item.appendChild(ulH4);
+                                }
+                                ulH4.appendChild(listItem);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            tocContainer.appendChild(toc);
+        }
+    });
+</script>
