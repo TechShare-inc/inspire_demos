@@ -1,21 +1,18 @@
-<link rel="stylesheet" href="../../style/style.css">
-
-<div class="toc-page" data-date="">
+<div id="toc" class="toc-page" data-date="">
     <h1 class="toc-page-title">ROS2 Modbusの使用方法</h1>
-    <div class="toc">
-        <div class="toc-title">目次</div>
+    <div class="toc-container">
+        <div class="toc-heading">目次</div>
         <div id="generated-toc"></div>
     </div>
 </div>
-
-<div class="page-break"></div>
+<div id="maincontent">
 
 # ROS2 Modbusの使用方法
 
 ---
 
 > **著作権表示 (Copyright):**  
-> © Inspire-Robots. All Rights Reserved.  
+> © Inspire-Robots & TechShare Inc. All Rights Reserved.  
 > オリジナルのスクリプトは Inspire-Robots 社によって提供されました。  
 > 翻訳およびフォーマットは TechShare 株式会社によって行われました。
 
@@ -320,12 +317,13 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
 - スクリプトからのサービス呼び出し例
 
 詳細な情報や更新については、[Inspire-Robots公式サイト](https://www.inspire-robots.com/)および[TechShare-Inspire](https://techshare.co.jp/product/other/dexterous-hands/)を参照してください。
+</div>
 
 <!-- Footer -->
-<div class="footer">
+<!-- <div class="footer">
     <div class="footer-doc-name">ROS2 Modbusの使用方法</div>
     <img class="footer-logo" src="../../style/TechShare_logo.svg" alt="TechShare Logo">
-</div>
+</div> -->
 
 <script>
     // Update document name in footer
@@ -336,7 +334,13 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
     //     if (docNameElement) {
     //         docNameElement.textContent = docName;
     //     }
-        
+        // Set attr data-document-docname
+        const h1Element = document.querySelector('h1');
+        if (h1Element) {
+            const docName = h1Element.textContent.trim();
+            document.documentElement.setAttribute('data-document-name', docName);
+        }
+
         // Set current date
         const tocPageElement = document.querySelector('.toc-page');
         if (tocPageElement) {
@@ -344,12 +348,20 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
             const dateString = today.toLocaleDateString('ja-JP');
             tocPageElement.setAttribute('data-date', dateString);
         }
-        
-        // Generate TOC
+          // Generate TOC
         const headings = document.querySelectorAll('h2, h3, h4');
         const tocContainer = document.getElementById('generated-toc');
         if (tocContainer) {
+            // Create main toc list
             const toc = document.createElement('ul');
+            toc.className = 'toc-list';
+            
+            // Counter for section numbering
+            let h2Counter = 0;
+            
+            // Handle potential multi-page TOC - add page break elements where needed
+            const maxTocItemsPerPage = 25; // Adjust based on your page size and font size
+            let tocItemCount = 0;
             
             headings.forEach(function(heading) {
                 if (!heading.id) {
@@ -360,19 +372,47 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
                 const link = document.createElement('a');
                 link.href = '#' + heading.id;
                 link.textContent = heading.textContent;
+                
+                // Add page number span (will be populated during PDF generation)
+                const pageNumSpan = document.createElement('span');
+                pageNumSpan.className = 'toc-page-num';
+                
                 listItem.appendChild(link);
+                listItem.appendChild(pageNumSpan);
+                
+                // Check if we need to add a page break for multi-page TOC
+                tocItemCount++;
+                // if (tocItemCount > maxTocItemsPerPage && tocItemCount % maxTocItemsPerPage === 1) {
+                //     // Add page break div before this item if it's the start of a new page
+                //     const pageBreakDiv = document.createElement('div');
+                //     pageBreakDiv.className = 'page-break toc-continuation';
+                //     tocContainer.appendChild(pageBreakDiv);
+                // }
                 
                 if (heading.tagName === 'H2') {
+                    h2Counter++;
+                    listItem.className = 'toc-level-1';
+                    listItem.setAttribute('data-number', h2Counter);
                     toc.appendChild(listItem);
                 } else if (heading.tagName === 'H3') {
                     // Find the last H2 list item and append to its UL or create one
                     const lastH2Item = Array.from(toc.children).pop();
                     if (lastH2Item) {
+                        let h3Counter = 0;
+                        const h2Counter = lastH2Item.getAttribute('data-number');
+                        
                         let ulH3 = lastH2Item.querySelector('ul');
                         if (!ulH3) {
                             ulH3 = document.createElement('ul');
+                            ulH3.className = 'toc-list';
                             lastH2Item.appendChild(ulH3);
                         }
+                        
+                        // Count existing H3 items in this section
+                        h3Counter = ulH3.children.length + 1;
+                        
+                        listItem.className = 'toc-level-2';
+                        listItem.setAttribute('data-number', h2Counter + '.' + h3Counter);
                         ulH3.appendChild(listItem);
                     }
                 } else if (heading.tagName === 'H4') {
@@ -384,11 +424,21 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
                         if (ulH3) {
                             const lastH3Item = Array.from(ulH3.children).pop();
                             if (lastH3Item) {
+                                let h4Counter = 0;
+                                const h3Number = lastH3Item.getAttribute('data-number');
+                                
                                 let ulH4 = lastH3Item.querySelector('ul');
                                 if (!ulH4) {
                                     ulH4 = document.createElement('ul');
+                                    ulH4.className = 'toc-list';
                                     lastH3Item.appendChild(ulH4);
                                 }
+                                
+                                // Count existing H4 items in this section
+                                h4Counter = ulH4.children.length + 1;
+                                
+                                listItem.className = 'toc-level-3';
+                                listItem.setAttribute('data-number', h3Number + '.' + h4Counter);
                                 ulH4.appendChild(listItem);
                             }
                         }

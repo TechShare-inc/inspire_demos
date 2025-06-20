@@ -1,11 +1,13 @@
 {
     "markdown-pdf.displayHeaderFooter": false,
     "markdown-pdf.styles": [
-        "style/style.css"
+        "style/minimal-style.css"
     ],
     "markdown-pdf.markdown-it-include.enable": true,
     "markdown-pdf.margin.top": "0",
     "markdown-pdf.margin.bottom": "0",
     "markdown-pdf.margin.left": "0",
     "markdown-pdf.margin.right": "0",
+    "markdown-pdf.includeDefaultStyles": false,
+    "markdown-pdf.outputDirectory": "dist"
 }

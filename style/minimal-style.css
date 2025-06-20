@@ -1,0 +1,377 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap");
+
+/* =============================================
+   SCREEN STYLES (Default)
+   ============================================= */
+
+/* Basic document styling */
+body {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 15px;
+  margin-bottom: 100px;
+}
+
+/* Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #0066cc;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 2.2em;
+  border-bottom: 2px solid #eaecef;
+  padding-bottom: 0.3em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1::after {
+  content: url("TechShare_logo.svg");
+  width: 200px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  margin-top: 16px;
+}
+
+h2 {
+  font-size: 1.8em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+h4 {
+  font-size: 1.3em;
+}
+h5 {
+  font-size: 1.1em;
+}
+
+/* Links */
+a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Code Blocks */
+pre {
+  background-color: #f6f8fa !important;
+  border-radius: 3px;
+  padding: 16px;
+  overflow: auto;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 85%;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+
+code {
+  background-color: rgba(27, 31, 35, 0.05) !important;
+  border-radius: 3px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 85%;
+  padding: 0.2em 0.4em;
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 4px solid #dfe2e5 !important;
+  color: #6a737d;
+  margin: 0;
+  padding: 0 1em;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+th,
+td {
+  border: 1px solid #dfe2e5 !important;
+  padding: 6px 13px;
+}
+
+th {
+  background-color: #f6f8fa !important;
+  font-weight: 600;
+}
+
+/* Lists */
+ul,
+ol {
+  padding-left: 2em;
+}
+
+/* Horizontal Rule */
+hr {
+  height: 2px;
+  background-color: #e1e4e8;
+  border: 0;
+  margin: 24px 0;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+}
+
+/* Footer - Screen only */
+.footer {
+  position: fixed;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eaecef;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+  color: #6a737d;
+}
+
+/* =============================================
+   PRINT STYLES
+   ============================================= */
+@media print {
+  @page {
+    @bottom-center {
+      content: "Page " counter(page) ;
+      text-align: center;
+      font-size: 9pt;
+      font-style: italic;
+      color: #666;
+      padding: 5px;
+      border-top: 0.5pt solid #ddd;
+    }
+    @bottom-right {
+      content: "TechShare Inc.";
+      font-size: 9pt;
+      color: #666;
+      padding: 5px;
+    }
+    @bottom-left {
+      content: attr(data-document-name);
+      font-size: 9pt;
+      color: #666;
+      padding: 5px;
+    }
+  }
+  
+  @page maincontent:first {
+    counter-reset: contentpages 1;
+  }
+
+  @page maincontent {
+    counter-increment: contentpages;
+  }
+
+  @page toc {
+    counter-reset: page 1;
+
+    @bottom-center {
+      content: "";
+      border: 0px solid #ddd;
+    }
+    @bottom-right {
+      content: "";
+    }
+    @bottom-left {
+      content: "";
+    }
+  }
+
+  
+  /* Basic document styling */
+  body {
+    margin-bottom: 0;
+    font-size: 11pt;
+    color: #000;
+  }
+
+  div#maincontent {
+    page: maincontent; /* Apply the main content page template */
+  }
+
+  div#toc {
+    page: toc; /* Apply the ToC page template */
+  }
+
+  /* Hide screen-only elements */
+  .footer {
+    display: none;
+  }
+
+  /* Make code blocks wrap in print mode */
+  code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* div inside the code */
+  code > div {
+    margin-left: 2em;
+  }
+
+  /* Typography adjustments for print */
+  h1 {
+    font-size: 19pt;
+  }
+  h2 {
+    font-size: 15pt;
+    page-break-before: always;
+  }
+  h3 {
+    font-size: 13pt;
+  }
+  h4 {
+    font-size: 12pt;
+  }
+
+  /* Page break behavior */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Automatic section numbering */
+  body {
+    counter-reset: h2counter;
+  }
+
+  h2 {
+    counter-reset: h3counter;
+    counter-increment: h2counter;
+  }
+
+  h3 {
+    counter-reset: h4counter;
+    counter-increment: h3counter;
+  }
+
+  h4 {
+    counter-increment: h4counter;
+  }
+
+  h2::before {
+    content: counter(h2counter) "." " ";
+  }
+
+  h3::before {
+    content: counter(h2counter) "." counter(h3counter) " ";
+  }
+
+  h4::before {
+    content: counter(h2counter) "." counter(h3counter) "." counter(h4counter)
+      " ";
+  }
+
+  img,
+  table,
+  figure,
+  pre {
+    page-break-inside: avoid;
+  }
+
+  /* Page settings */
+  @page {
+    margin: 0.5in 0.5in 0.75in 0.5in;
+    size: A4 portrait;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* ToC related */
+  .toc-page {
+    page-break-after: always;
+  }
+
+
+  .toc-container {
+    margin-bottom: 2em;
+  }
+
+  .toc-heading {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 1em;
+    text-align: center;
+    color: #000;
+  }
+
+  .toc-list {
+    list-style-type: none;
+    padding-left: 0;
+  }
+
+  .toc-list li {
+    margin-bottom: 0.5em;
+    font-size: 11pt;
+  }
+
+  .toc-level-1 {
+    font-weight: 600;
+  }
+
+  .toc-level-2 {
+    padding-left: 1.5em;
+  }
+
+  .toc-level-3 {
+    padding-left: 3em;
+    font-size: 10pt;
+  }
+
+  .toc-page-num {
+    float: right;
+  }
+
+  .toc-level-1::before {
+    content: attr(data-number) "  ";
+    font-weight: bold;
+  }
+
+  .toc-level-2::before {
+    content: attr(data-number) "  ";
+  }
+  .toc-level-3::before {
+    content: attr(data-number) "  ";
+  }
+  .toc-level-4::before {
+    content: attr(data-number) "  ";
+  }
+}
