@@ -39,4 +39,4 @@ def main(port: str, baudrate: int):
 
 
 if __name__ == "__main__":
-    main(port="COM7", baudrate=115200)
+    main(port="COM8", baudrate=115200)

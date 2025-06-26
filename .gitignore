@@ -1,2 +1,4 @@
 api/__pycache__/inspire_api.cpython-311.pyc
 dist/*
+.gitignore
+venv
