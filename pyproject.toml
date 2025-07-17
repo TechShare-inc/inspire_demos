@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "inspire-demos"
 version = "0.1.0"
-description = "Python interface for controlling the Inspire Hand robotic hand"
+description = "Python interface for controlling the Inspire Hand robotic hand via Serial and Modbus TCP"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -20,7 +20,9 @@ keywords = [
     "hand control",
     "inspire hand",
     "serial communication",
+    "modbus tcp",
     "robotic hand",
+    "automation",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -40,6 +42,9 @@ classifiers = [
 ]
 dependencies = [
     "pyserial>=3.4",
+    "pymodbus>=3.0",
+    "numpy>=1.20",
+    "loguru>=0.6"
 ]
 
 [project.optional-dependencies]

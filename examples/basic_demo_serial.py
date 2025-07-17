@@ -1,7 +1,7 @@
 import time
 import serial.tools.list_ports
 import numpy as np
-from inspire_demos import InspireHandAPI
+from inspire_demos import InspireHandSerial
 
 
 motion = np.array([
@@ -88,9 +88,9 @@ def main(port: str = None, baudrate: int = 115200):
     print(f"Connecting to {port} at {baudrate} baud...")
     
     try:
-        api = InspireHandAPI(port, baudrate)
+        api = InspireHandSerial(port, baudrate, generation=4)
         api.connect()
-        print("Successfully connected to the hand!")
+        print(f"Successfully connected to the Gen 4 hand!")
 
         api.reset_error()
         time.sleep(0.1)

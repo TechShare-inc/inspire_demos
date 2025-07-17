@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import os
-from typing import Any, Union, List
+from typing import Any, Union
 import serial
 import time
 import asyncio
@@ -13,6 +13,13 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     raise ImportError("NumPy is required for this API. Please install it with: pip install numpy")
+
+try:
+    from pymodbus.client import ModbusTcpClient
+    MODBUS_AVAILABLE = True
+except ImportError:
+    MODBUS_AVAILABLE = False
+    logger.warning("pymodbus not available. InspireHandModbus class will not be functional. Install with: pip install pymodbus")
 
 import serial.tools
 
@@ -91,18 +98,30 @@ regdict_gen4 = {
     "IP_PART3": 1702,
     "IP_PART4": 1703,
 
-    "FINGERONE_TOUCH": 3000, # Pinky
-    "FINGERTWO_TOUCH": 3370, # Ring
-    "FINGERTHE_TOUCH": 3740, # Middle
-    "FINGERFOR_TOUCH": 4110, # Index
-    "FINGERFIV_TOUCH": 4480, # Thumb
-    "FINGERPALM_TOUCH": 4900, # Palm
+    "PINKY_TOP_TAC": (3000, (3, 3)),
+    "PINKY_TIP_TAC": (3018, (12, 8)),
+    "PINKY_BASE_TAC": (3210, (10,8)),
+    "RING_TOP_TAC": (3370, (3,3)),
+    "RING_TIP_TAC": (3388, (12, 8)),
+    "RING_BASE_TAC": (3580, (10,8)),
+    "MIDDLE_TOP_TAC": (3740, (3,3)),
+    "MIDDLE_TIP_TAC": (3758, (12,8)),
+    "MIDDLE_BASE_TAC": (3950, (10,8)),
+    "INDEX_TOP_TAC": (4110, (3,3)),
+    "INDEX_TIP_TAC": (4128, (12,8)),
+    "INDEX_BASE_TAC": (4320, (10,8)),
+    "THUMB_TOP_TAC": (4480, (3,3)),
+    "THUMB_TIP_TAC": (4498, (12,8)),
+    "THUMB_MID_TAC": (4690, (3,3)),
+    "THUMB_BASE_TAC": (4708, (10,8)),
+    "PALM_TAC": (4900, (8,14)), # Palm
 }
 
 DEFAULT_PORT = "COM3" if os.name == "nt" else "/dev/ttyUSB0"
 DEFAULT_BAUDRATE = 115200
 
-class InspireHandAPI:
+
+class InspireHandSerial:
     _logger = logger
     _ser: serial.Serial
     _port: str
