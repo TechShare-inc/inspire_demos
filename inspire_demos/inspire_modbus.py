@@ -287,7 +287,7 @@ class InspireHandModbus:
         result = self._read6_8bit("ERROR")
         return np.array(result, dtype=np.int32)
 
-    def get_temp(self) -> npt.NDArray[np.int32]:
+    def get_temperature(self) -> npt.NDArray[np.int32]:
         """Get temperature values as numpy array."""
         result = self._read6_8bit("TEMP")
         return np.array(result, dtype=np.int32)

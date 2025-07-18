@@ -52,7 +52,7 @@ def main():
         logger.info(f"Error codes: {errors}")
         
         # Check temperature
-        temps = hand.get_temp()
+        temps = hand.get_temperature()
         logger.info(f"Temperatures: {temps}")
         
         # Verify tactile sensors are available

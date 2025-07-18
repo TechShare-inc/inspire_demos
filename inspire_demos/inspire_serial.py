@@ -314,7 +314,7 @@ class InspireHandSerial:
 
         while self._ser.in_waiting > 0:
             self._ser.read_all()  # 把返回帧读掉，不处理
-            time.sleep(0.01)
+            time.sleep(0.01) # Give some time for the serial buffer to clear
 
         return True
 
