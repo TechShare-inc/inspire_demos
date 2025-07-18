@@ -69,7 +69,7 @@ Repository = "https://github.com/TechShare-inc/inspire_demos.git"
 "Bug Tracker" = "https://github.com/TechShare-inc/inspire_demos/issues"
 
 [project.scripts]
-inspire-demo = "inspire_demos.examples.basic_demo:main"
+inspire-demo = "inspire_demos.examples.basic_serial_demo:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["inspire_demos"]
