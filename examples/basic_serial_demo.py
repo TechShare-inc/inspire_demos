@@ -54,11 +54,11 @@ FINGER_WAVE = np.array([
 class SerialDemo:
     """Interactive demonstration of serial communication features"""
     
-    def __init__(self):
+    def __init__(self, generation=3):
         self.api = None
         self.port = None
         self.baudrate = 115200
-        self.generation = 4
+        self.generation = generation
     
     def list_serial_ports(self):
         """List all available serial ports and return them as a list."""
