@@ -4,6 +4,7 @@
         <div class="toc-heading">目次</div>
         <div id="generated-toc"></div>
     </div>
+    <link rel="stylesheet" href="../../style/toc-styles.css">
 </div>
 <div id="maincontent">
 
@@ -347,8 +348,7 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
             const today = new Date();
             const dateString = today.toLocaleDateString('ja-JP');
             tocPageElement.setAttribute('data-date', dateString);
-        }
-          // Generate TOC
+        }          // Generate TOC
         const headings = document.querySelectorAll('h2, h3, h4');
         const tocContainer = document.getElementById('generated-toc');
         if (tocContainer) {
@@ -363,36 +363,46 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
             const maxTocItemsPerPage = 25; // Adjust based on your page size and font size
             let tocItemCount = 0;
             
+            // Also add section numbers to the actual headings in the document
             headings.forEach(function(heading) {
                 if (!heading.id) {
                     heading.id = heading.textContent.toLowerCase().replace(/\s+/g, '-');
                 }
                 
                 const listItem = document.createElement('li');
+                
+                // Create number span for visible numbering
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'toc-number';
+                
+                // Create title span element
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'toc-title';
+                
+                // Create link inside the title span
                 const link = document.createElement('a');
                 link.href = '#' + heading.id;
-                link.textContent = heading.textContent;
                 
                 // Add page number span (will be populated during PDF generation)
                 const pageNumSpan = document.createElement('span');
                 pageNumSpan.className = 'toc-page-num';
                 
-                listItem.appendChild(link);
-                listItem.appendChild(pageNumSpan);
-                
                 // Check if we need to add a page break for multi-page TOC
                 tocItemCount++;
-                // if (tocItemCount > maxTocItemsPerPage && tocItemCount % maxTocItemsPerPage === 1) {
-                //     // Add page break div before this item if it's the start of a new page
-                //     const pageBreakDiv = document.createElement('div');
-                //     pageBreakDiv.className = 'page-break toc-continuation';
-                //     tocContainer.appendChild(pageBreakDiv);
-                // }
+                
+                let sectionNumber = '';
                 
                 if (heading.tagName === 'H2') {
                     h2Counter++;
+                    sectionNumber = h2Counter.toString();
                     listItem.className = 'toc-level-1';
-                    listItem.setAttribute('data-number', h2Counter);
+                    listItem.setAttribute('data-number', sectionNumber);
+                    
+                    // Add heading to document with number
+                    numberSpan.textContent = sectionNumber + '. ';
+                    link.textContent = heading.textContent;
+                    
+                    // Add the numbered heading to TOC
                     toc.appendChild(listItem);
                 } else if (heading.tagName === 'H3') {
                     // Find the last H2 list item and append to its UL or create one
@@ -410,9 +420,15 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
                         
                         // Count existing H3 items in this section
                         h3Counter = ulH3.children.length + 1;
+                        sectionNumber = h2Counter + '.' + h3Counter;
                         
                         listItem.className = 'toc-level-2';
-                        listItem.setAttribute('data-number', h2Counter + '.' + h3Counter);
+                        listItem.setAttribute('data-number', sectionNumber);
+                        
+                        // Add heading to document with number
+                        numberSpan.textContent = sectionNumber + ' ';
+                        link.textContent = heading.textContent;
+                        
                         ulH3.appendChild(listItem);
                     }
                 } else if (heading.tagName === 'H4') {
@@ -436,17 +452,51 @@ ros2 run inspire_hand_modbus_ros2 hand_control_client_modbus_node
                                 
                                 // Count existing H4 items in this section
                                 h4Counter = ulH4.children.length + 1;
+                                sectionNumber = h3Number + '.' + h4Counter;
                                 
                                 listItem.className = 'toc-level-3';
-                                listItem.setAttribute('data-number', h3Number + '.' + h4Counter);
+                                listItem.setAttribute('data-number', sectionNumber);
+                                
+                                // Add heading to document with number
+                                numberSpan.textContent = sectionNumber + ' ';
+                                link.textContent = heading.textContent;
+                                
                                 ulH4.appendChild(listItem);
                             }
                         }
                     }
                 }
+                
+                // Add section number to link text
+                titleSpan.appendChild(numberSpan);
+                titleSpan.appendChild(link);
+                
+                // Append both to the list item
+                listItem.appendChild(titleSpan);
+                listItem.appendChild(pageNumSpan);
+            });            
+            tocContainer.appendChild(toc);
+            
+            // Add section numbers to the headings in the document
+            headings.forEach(function(heading) {
+                const sectionNumber = heading.closest('[data-number]')?.getAttribute('data-number');
+                if (sectionNumber) {
+                    // Only add numbers to headings if they don't already have them
+                    if (!heading.textContent.trim().startsWith(sectionNumber)) {
+                        const numberSpan = document.createElement('span');
+                        numberSpan.className = 'section-number';
+                        numberSpan.textContent = sectionNumber + ' ';
+                        heading.insertBefore(numberSpan, heading.firstChild);
+                    }
+                }
             });
             
-            tocContainer.appendChild(toc);
+            // Add page numbers to TOC entries for PDF generation
+            const startingPage = 2; // Assuming content starts at page 2 after TOC page
+            document.querySelectorAll('.toc-page-num').forEach(function(span, index) {
+                // We'll use empty dots for now as placeholders - actual numbers will be filled during PDF conversion
+                span.textContent = '..........';
+            });
         }
     });
 </script>

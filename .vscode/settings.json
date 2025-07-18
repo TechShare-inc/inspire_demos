@@ -1,7 +1,9 @@
 {
     "markdown-pdf.displayHeaderFooter": false,
     "markdown-pdf.styles": [
-        "style/minimal-style.css"
+        "style/minimal-style.css",
+        "style/toc-styles.css"
+
     ],
     "markdown-pdf.markdown-it-include.enable": true,
     "markdown-pdf.margin.top": "0",
