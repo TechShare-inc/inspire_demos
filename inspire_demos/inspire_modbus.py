@@ -363,12 +363,14 @@ class InspireHandModbus:
             data_array = np.array(raw_data, dtype=np.int32)
             
             if friendly_name == "palm":
-                # Palm: row-first ordering with reversed rows (bottom-to-top, left-to-right)
-                matrix = data_array.reshape(rows, cols, order='C')  # Row-major (C-style)
-                matrix = np.flipud(matrix)  # Reverse rows (bottom-to-top)
+                # Palm: Custom mapping - data points fill column by column from bottom to top
+                # Data point 1 -> row 8, col 1; Data point 2 -> row 7, col 1; etc.
+                matrix = data_array.reshape(cols, rows, order='C')  # Reshape as (cols, rows) first
+                matrix = matrix.T  # Transpose and flip to get correct orientation
+                # matrix = np.flipud(matrix.T)  # Transpose and flip to get correct orientation
             else:
-                # Fingers: column-first ordering
-                matrix = data_array.reshape(rows, cols, order='F')  # Column-major (Fortran-style)
+                # Fingers: row-first ordering (data fills row by row, left to right)
+                matrix = data_array.reshape(rows, cols, order='C')  # Row-major (C-style)
             
             tactile_data[friendly_name] = matrix
             
