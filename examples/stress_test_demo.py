@@ -89,9 +89,9 @@ class StressTester:
         
         # Test configurations
         self.test_commands = [
-            np.array([0, 0, 0, 0, 200, 1000], dtype=np.int32),      # Open
-            np.array([1000, 1000, 1000, 1000, 1000, 1000], dtype=np.int32),  # Close
-            np.array([500, 500, 500, 500, 600, 1000], dtype=np.int32),  # Half
+            np.array([0, 0, 0, 0, 200, 1000], dtype=np.int32),      # Close without collision
+            np.array([1000, 1000, 1000, 1000, 1000, 1000], dtype=np.int32),  # Open
+            np.array([500, 500, 500, 500, 600, 900], dtype=np.int32),  # Half
         ]
         
         # Set up output directory (root folder)
@@ -157,35 +157,52 @@ class StressTester:
         print("  Modbus interface connected")
         
         try:
-            operations = [
-                ("get_angle", lambda: self.modbus_hand.get_angle_actual()),
-                ("get_tactile", lambda: self.modbus_hand.get_tactile_data()),
-                ("get_temp", lambda: self.modbus_hand.get_temperature()),
-            ]
-            
+            # Phase 1: Set and Get Angle (same as Serial)
+            print("  Phase 1: Set/Get Angle operations")
+            cmd_idx = 0
             for i in range(iterations):
                 start_time = time.time()
                 
                 try:
-                    op_name, operation = operations[i % len(operations)]
-                    data = await loop.run_in_executor(None, operation)
+                    command = self.test_commands[cmd_idx]
+                    await loop.run_in_executor(None, self.modbus_hand.set_angle, command)
+                    response = await loop.run_in_executor(None, self.modbus_hand.get_angle_actual)
+                    
+                    latency = time.time() - start_time
+                    data_size = len(command) * 4 + len(response) * 4  # Estimated bytes
+                    self.modbus_metrics.record_result(latency, data_size, True)
+                    
+                    if (i + 1) % 10 == 0:
+                        print(f"  Progress: {i+1}/{iterations} | Last latency: {latency*1000:.1f}ms")
+                    
+                except Exception as e:
+                    latency = time.time() - start_time
+                    self.modbus_metrics.record_result(latency, 0, False)
+                    print(f"  Error {i+1}: {e}")
+                
+                cmd_idx = (cmd_idx + 1) % len(self.test_commands)
+                await asyncio.sleep(0.01)  # Small delay
+            
+            # Phase 2: Get Tactile Data (Modbus only feature)
+            print("  Phase 2: Get Tactile Data operations (Modbus only)")
+            for i in range(iterations):
+                start_time = time.time()
+                
+                try:
+                    tactile_data = await loop.run_in_executor(None, self.modbus_hand.get_tactile_data)
                     
                     latency = time.time() - start_time
                     
-                    # Estimate data size based on operation type
-                    if op_name == "get_angle" and data is not None:
-                        data_size = len(data) * 4
-                    elif op_name == "get_tactile" and data:
-                        data_size = sum(sensor.nbytes for sensor in data.values())
-                    elif op_name == "get_temp" and data is not None:
-                        data_size = len(data) * 4
+                    # Estimate data size for tactile data
+                    if tactile_data:
+                        data_size = sum(sensor.nbytes for sensor in tactile_data.values())
                     else:
                         data_size = 0
                     
                     self.modbus_metrics.record_result(latency, data_size, True)
                     
                     if (i + 1) % 10 == 0:
-                        print(f"  Progress: {i+1}/{iterations} | Last latency: {latency*1000:.1f}ms | Op: {op_name}")
+                        print(f"  Progress: {i+1}/{iterations} | Last latency: {latency*1000:.1f}ms | Tactile")
                     
                 except Exception as e:
                     latency = time.time() - start_time
