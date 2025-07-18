@@ -226,7 +226,7 @@ serial_hand = InspireHandSerial(port="/dev/ttyUSB0", generation=4)
 modbus_hand = InspireHandModbus(ip="192.168.11.210", generation=4)
 ```
 
-## 🎯 Testing Workflow for Junior Engineers
+## 🎯 Testing Workflow for Dev Engineers
 
 ### Step 1: Basic Connectivity Test
 Start with `basic_serial_demo.py`:
