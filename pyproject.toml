@@ -44,7 +44,8 @@ dependencies = [
     "pyserial>=3.4",
     "pymodbus>=3.0",
     "numpy>=1.20",
-    "loguru>=0.6"
+    "loguru>=0.6",
+    "matplotlib>=3.5"
 ]
 
 [project.optional-dependencies]
