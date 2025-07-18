@@ -809,6 +809,7 @@ if __name__ == "__main__":
     print("Communication Throughput Stress Test Demo")
     print(f"Adjust COM port ({SERIAL_PORT}) and IP ({MODBUS_IP}) settings at the top of this file!")
     print()
+    print("NOTE: For tactile data collection demo, see tactile_data_demo.py")
     
     try:
         asyncio.run(main())

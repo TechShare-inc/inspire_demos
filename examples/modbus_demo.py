@@ -410,7 +410,7 @@ class ModbusDemo:
                             data_mean = data.mean()
                             print(f"  {sensor_name:15} | {rows_data:2}x{cols_data:2} | [{data_min:4}, {data_max:4}] | Mean: {data_mean:6.1f}")
                     
-                    time.sleep(0.5)  # Wait 0.5 seconds before next reading
+                    time.sleep(0.05)  # Wait 0.5 seconds before next reading
                     
             except KeyboardInterrupt:
                 print("\nStopping continuous monitoring...")

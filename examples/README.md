@@ -163,6 +163,41 @@ python3 stress_test_demo.py
 
 **Output**: Generates CSV files and performance reports
 
+---
+
+### 5. `tactile_data_demo.py` - Simple Tactile Data Collection & Trend Visualization
+**Purpose**: Collect tactile sensor data for 10 seconds and visualize trends.
+
+**What it does**:
+- Connects to Gen4 hand via Modbus
+- Collects tactile data from all sensors for 10 seconds
+- Plots trends showing how sensor values change over time
+- Displays summary statistics for each sensor
+- Simple, single-function approach
+
+**When to use**:
+- Quick tactile sensor validation
+- Understanding baseline sensor behavior
+- Checking for sensor drift or anomalies
+- Simple data collection for analysis
+
+**Hardware required**: Generation 4 hand with Ethernet connection
+
+**How to run**:
+
+**Windows (PowerShell):**
+```powershell
+python tactile_data_demo.py
+```
+
+**Ubuntu/Linux (bash):**
+```bash
+python3 tactile_data_demo.py
+```
+
+**Configuration**: Update IP address in the script (default: 192.168.11.210)
+**Output**: Interactive plot showing sensor trends over time
+
 ## 🔧 Configuration Guide
 
 ### Serial Connection Setup
@@ -206,13 +241,20 @@ Try `modbus_demo.py`:
 2. Test sensor data reading
 3. Verify tactile feedback (Gen 4 only)
 
-### Step 3: Production Simulation
+### Step 3: Tactile Data Analysis (Gen4 only)
+Use `tactile_data_demo.py`:
+1. Connect Gen4 hand via Ethernet
+2. Collect tactile data for 10 seconds
+3. Analyze sensor heatmaps and time series
+4. Export data for further analysis
+
+### Step 4: Production Simulation
 Use `dual_interface_demo.py`:
 1. Connect both USB and Ethernet
 2. Test simultaneous communication
 3. Verify real-time monitoring
 
-### Step 4: Performance Validation
+### Step 5: Performance Validation
 Run `stress_test_demo.py`:
 1. Choose communication method
 2. Run stress tests
