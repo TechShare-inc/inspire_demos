@@ -33,9 +33,9 @@ async def main():
     
     # Demo: Control via Serial, Monitor via Modbus
     movements = [
-        [0, 0, 0, 0, 0, 700],      # Open
+        [0, 0, 0, 0, 200, 1000],      # Open
         [1000, 1000, 1000, 1000, 1000, 1000],  # Close
-        [0, 0, 0, 0, 0, 700],      # Open again
+        [0, 0, 0, 0, 200, 1000],      # Open again
     ]
     
     for i, angles in enumerate(movements):
