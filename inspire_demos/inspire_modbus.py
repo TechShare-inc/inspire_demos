@@ -182,25 +182,82 @@ class InspireHandModbus:
             return False
 
     def _read_register(self, address: int, count: int) -> List[int]:
-        """Read from Modbus registers"""
+        """Read from Modbus registers with automatic segmentation for large reads.
+        This method reads holding registers from a Modbus device, automatically handling
+        large read requests by segmenting them into smaller chunks that comply with
+        Modbus protocol limitations (max 125 registers per transaction).
+        Args:
+            address (int): Starting register address to read from
+            count (int): Number of consecutive registers to read
+        Returns:
+            List[int]: List of register values read from the device. Returns empty list
+                      if connection is not established, read operation fails, or an
+                      exception occurs.
+        Raises:
+            Exception: Logs error and returns empty list if any exception occurs during
+                      the read operation.
+        Note:
+            - Requires an active Modbus connection (call connect() first)
+            - Automatically segments reads larger than 125 registers
+            - Provides debug logging when debug mode is enabled
+            - Uses holding registers (function code 3)
+        """
         if not self.is_connected():
             self._logger.error("Modbus connection not established. Call connect() first.")
             return []
 
+        # Maximum registers that can be read in a single Modbus transaction
+        MAX_REGISTERS_PER_READ = 125
+        
         try:
-            if self._debug:
-                self._logger.debug(f"Reading {count} registers from address {address}")
+            if count <= MAX_REGISTERS_PER_READ:
+                # Single read for small requests
+                if self._debug:
+                    self._logger.debug(f"Reading {count} registers from address {address}")
 
-            response = self._client.read_holding_registers(address, count=count)
-            if response.isError():
-                self._logger.error(f"Modbus read error from address {address}")
-                return []
+                response = self._client.read_holding_registers(address, count=count)
+                if response.isError():
+                    self._logger.error(f"Modbus read error from address {address}")
+                    return []
 
-            result = response.registers
-            if self._debug:
-                self._logger.debug(f"Read {len(result)} values from register {address}: {result}")
+                result = response.registers
+                if self._debug:
+                    self._logger.debug(f"Read {len(result)} values from register {address}: {result}")
 
-            return result
+                return result
+            else:
+                # Segmented read for large requests
+                if self._debug:
+                    self._logger.debug(f"Reading {count} registers from address {address} in segments (max {MAX_REGISTERS_PER_READ} per segment)")
+
+                all_results = []
+                remaining_count = count
+                current_address = address
+
+                while remaining_count > 0:
+                    # Determine how many registers to read in this segment
+                    segment_count = min(remaining_count, MAX_REGISTERS_PER_READ)
+                    
+                    if self._debug:
+                        self._logger.debug(f"Reading segment: {segment_count} registers from address {current_address}")
+
+                    response = self._client.read_holding_registers(current_address, count=segment_count)
+                    if response.isError():
+                        self._logger.error(f"Modbus read error from address {current_address} (segment)")
+                        return []
+
+                    segment_results = response.registers
+                    all_results.extend(segment_results)
+                    
+                    # Update for next segment
+                    remaining_count -= segment_count
+                    current_address += segment_count
+
+                if self._debug:
+                    self._logger.debug(f"Completed segmented read: {len(all_results)} total values from address {address}")
+
+                return all_results
+
         except Exception as e:
             self._logger.error(f"Failed to read from register {address}: {e}")
             return []
