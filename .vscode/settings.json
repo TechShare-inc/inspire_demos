@@ -11,5 +11,12 @@
     "markdown-pdf.margin.left": "0",
     "markdown-pdf.margin.right": "0",
     "markdown-pdf.includeDefaultStyles": false,
-    "markdown-pdf.outputDirectory": "dist"
+    "markdown-pdf.outputDirectory": "dist",
+    // "terminal.integrated.defaultProfile.windows": "Anaconda PS Prompt",
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.autoImportCompletions": true,
+    "python.useEnvironmentsExtension": true,
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": [],
 }
