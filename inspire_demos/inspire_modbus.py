@@ -4,10 +4,39 @@ from pymodbus.client import ModbusTcpClient
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
+import time
+from dataclasses import dataclass
+
+from typing import List, Optional, Dict, Union, Any
 
 
-from typing import List
+@dataclass
+class FingerSensorData:
+    """Data class for individual finger sensor data."""
+    top: npt.NDArray[np.int32]
+    tip: npt.NDArray[np.int32]
+    base: npt.NDArray[np.int32]
 
+
+@dataclass
+class ThumbSensorData:
+    """Data class for thumb sensor data (includes mid sensor)."""
+    top: npt.NDArray[np.int32]
+    tip: npt.NDArray[np.int32]
+    mid: npt.NDArray[np.int32]
+    base: npt.NDArray[np.int32]
+
+
+@dataclass
+class TactileData:
+    """Data class for all tactile sensor data with timestamp."""
+    timestamp: float
+    pinky: FingerSensorData
+    ring: FingerSensorData
+    middle: FingerSensorData
+    index: FingerSensorData
+    thumb: ThumbSensorData
+    palm: npt.NDArray[np.int32]
 
 class InspireHandModbus:
     """Modbus TCP interface for Inspire Hand control"""
@@ -28,7 +57,7 @@ class InspireHandModbus:
         self._port = port
         self._generation = generation
         self._debug = debug
-        self._client = None
+        # self._client = None
         self._connected = False
 
     @property
@@ -366,41 +395,44 @@ class InspireHandModbus:
         """Run the current action sequence"""
         return self._write_register(self._regdict["ACTION_SEQ_RUN"], [1])
 
-    def get_tactile_data(self) -> dict[str, npt.NDArray[np.int32]]:
-        """Get tactile sensor data as dictionary of numpy arrays.
+    def get_all_tactile_data(self) -> TactileData:
+        """Get all tactile sensor data as a structured TactileData object.
         
         Returns:
-            dict: Dictionary with sensor names as keys and 2D numpy arrays as values.
-                 For fingers: column-first ordering (data read sequentially fills columns first)
-                 For palm: row-first ordering with reversed rows (bottom-to-top, left-to-right)
+            TactileData: Structured object containing all tactile sensor data with timestamp
         """
         if self._generation != 4:
             self._logger.error("Tactile sensors are only available in Gen 4 hardware")
             raise NotImplementedError("Tactile sensors are only available in Gen 4 hardware")
         
+        # Get current timestamp
+        timestamp = time.time()
+        
         tactile_sensors = {
-            "PINKY_TOP_TAC": "pinky_top",
-            "PINKY_TIP_TAC": "pinky_tip", 
-            "PINKY_BASE_TAC": "pinky_base",
-            "RING_TOP_TAC": "ring_top",
-            "RING_TIP_TAC": "ring_tip",
-            "RING_BASE_TAC": "ring_base", 
-            "MIDDLE_TOP_TAC": "middle_top",
-            "MIDDLE_TIP_TAC": "middle_tip",
-            "MIDDLE_BASE_TAC": "middle_base",
-            "INDEX_TOP_TAC": "index_top",
-            "INDEX_TIP_TAC": "index_tip",
-            "INDEX_BASE_TAC": "index_base",
-            "THUMB_TOP_TAC": "thumb_top",
-            "THUMB_TIP_TAC": "thumb_tip",
-            "THUMB_MID_TAC": "thumb_mid",
-            "THUMB_BASE_TAC": "thumb_base",
-            "PALM_TAC": "palm"
+            "PINKY_TOP_TAC": ("pinky", "top"),
+            "PINKY_TIP_TAC": ("pinky", "tip"), 
+            "PINKY_BASE_TAC": ("pinky", "base"),
+            "RING_TOP_TAC": ("ring", "top"),
+            "RING_TIP_TAC": ("ring", "tip"),
+            "RING_BASE_TAC": ("ring", "base"), 
+            "MIDDLE_TOP_TAC": ("middle", "top"),
+            "MIDDLE_TIP_TAC": ("middle", "tip"),
+            "MIDDLE_BASE_TAC": ("middle", "base"),
+            "INDEX_TOP_TAC": ("index", "top"),
+            "INDEX_TIP_TAC": ("index", "tip"),
+            "INDEX_BASE_TAC": ("index", "base"),
+            "THUMB_TOP_TAC": ("thumb", "top"),
+            "THUMB_TIP_TAC": ("thumb", "tip"),
+            "THUMB_MID_TAC": ("thumb", "mid"),
+            "THUMB_BASE_TAC": ("thumb", "base"),
+            "PALM_TAC": ("palm", None)
         }
         
-        tactile_data = {}
+        # Initialize data storage for building the data class
+        sensor_data = {}
+        palm_data = None
         
-        for reg_name, friendly_name in tactile_sensors.items():
+        for reg_name, (finger, position) in tactile_sensors.items():
             if reg_name not in self._regdict:
                 self._logger.warning(f"Tactile sensor register '{reg_name}' not found")
                 continue
@@ -413,44 +445,134 @@ class InspireHandModbus:
             raw_data = self._read_register(address, total_elements)
             
             if len(raw_data) != total_elements:
-                self._logger.error(f"Failed to read complete tactile data for {friendly_name}: expected {total_elements}, got {len(raw_data)}")
+                self._logger.error(f"Failed to read complete tactile data for {finger}_{position}: expected {total_elements}, got {len(raw_data)}")
                 continue
             
             # Convert to numpy array of int32 (16-bit values in little-endian are already handled by pymodbus)
             data_array = np.array(raw_data, dtype=np.int32)
             
-            if friendly_name == "palm":
+            if finger == "palm":
                 # Palm: Custom mapping - data points fill column by column from bottom to top
                 # Data point 1 -> row 8, col 1; Data point 2 -> row 7, col 1; etc.
                 matrix = data_array.reshape(cols, rows, order='C')  # Reshape as (cols, rows) first
-                matrix = matrix.T  # Transpose and flip to get correct orientation
-                # matrix = np.flipud(matrix.T)  # Transpose and flip to get correct orientation
+                palm_data = matrix.T  # Transpose to get correct orientation
             else:
                 # Fingers: row-first ordering (data fills row by row, left to right)
+                # Data point 1 -> row 1, col 1; Data point 2 -> row 1, col 2; etc.
                 matrix = data_array.reshape(rows, cols, order='C')  # Row-major (C-style)
-            
-            tactile_data[friendly_name] = matrix
+                
+                if finger not in sensor_data:
+                    sensor_data[finger] = {}
+                sensor_data[finger][position] = matrix
             
             if self._debug:
-                self._logger.debug(f"Read {friendly_name} tactile data: {shape} matrix from address {address}")
+                sensor_name = f"{finger}_{position}" if position else finger
+                self._logger.debug(f"Read {sensor_name} tactile data: {shape} matrix from address {address}")
         
-        return tactile_data
+        # Create structured finger data objects
+        finger_objects = {}
+        for finger_name in ['pinky', 'ring', 'middle', 'index']:
+            if finger_name in sensor_data:
+                finger_objects[finger_name] = FingerSensorData(
+                    top=sensor_data[finger_name].get('top', np.array([], dtype=np.int32)),
+                    tip=sensor_data[finger_name].get('tip', np.array([], dtype=np.int32)),
+                    base=sensor_data[finger_name].get('base', np.array([], dtype=np.int32))
+                )
+        
+        # Create thumb data object (includes mid sensor)
+        thumb_data = ThumbSensorData(
+            top=sensor_data.get('thumb', {}).get('top', np.array([], dtype=np.int32)),
+            tip=sensor_data.get('thumb', {}).get('tip', np.array([], dtype=np.int32)),
+            mid=sensor_data.get('thumb', {}).get('mid', np.array([], dtype=np.int32)),
+            base=sensor_data.get('thumb', {}).get('base', np.array([], dtype=np.int32))
+        )
+        
+        # Create and return the structured TactileData object
+        return TactileData(
+            timestamp=timestamp,
+            pinky=finger_objects.get('pinky', FingerSensorData(np.array([], dtype=np.int32), np.array([], dtype=np.int32), np.array([], dtype=np.int32))),
+            ring=finger_objects.get('ring', FingerSensorData(np.array([], dtype=np.int32), np.array([], dtype=np.int32), np.array([], dtype=np.int32))),
+            middle=finger_objects.get('middle', FingerSensorData(np.array([], dtype=np.int32), np.array([], dtype=np.int32), np.array([], dtype=np.int32))),
+            index=finger_objects.get('index', FingerSensorData(np.array([], dtype=np.int32), np.array([], dtype=np.int32), np.array([], dtype=np.int32))),
+            thumb=thumb_data,
+            palm=palm_data if palm_data is not None else np.array([], dtype=np.int32)
+        )
 
-    def get_tactile_sensor_data(self, sensor_name: str) -> npt.NDArray[np.int32]:
-        """Get tactile data for a specific sensor.
+    def get_tactile_data(self, finger: str, position: str = '') -> npt.NDArray[np.int32]:
+        """Get tactile data for a single sensor.
         
         Args:
-            sensor_name: Name of the sensor (e.g., 'pinky_top', 'palm', 'thumb_tip')
+            finger: Name of the finger ('pinky', 'ring', 'middle', 'index', 'thumb', 'palm')
+            position: Position on finger ('top', 'tip', 'base', 'mid' for thumb only)
+                     Not used for palm sensor (can be empty string)
         
         Returns:
-            2D numpy array with tactile sensor data
+            2D numpy array with tactile sensor data for the specified sensor
         """
-        all_data = self.get_tactile_data()
-        if sensor_name not in all_data:
-            available_sensors = list(all_data.keys())
-            raise ValueError(f"Sensor '{sensor_name}' not found. Available sensors: {available_sensors}")
-        return all_data[sensor_name]
-
+        if self._generation != 4:
+            self._logger.error("Tactile sensors are only available in Gen 4 hardware")
+            raise NotImplementedError("Tactile sensors are only available in Gen 4 hardware")
+        
+        # Handle palm sensor directly
+        if finger == 'palm':
+            reg_name = "PALM_TAC"
+            if reg_name not in self._regdict:
+                raise ValueError(f"Palm sensor register not found")
+            
+            address, shape = self._regdict[reg_name]
+            rows, cols = shape
+            total_elements = rows * cols
+            
+            raw_data = self._read_register(address, total_elements)
+            if len(raw_data) != total_elements:
+                self._logger.error(f"Failed to read complete palm tactile data: expected {total_elements}, got {len(raw_data)}")
+                return np.array([], dtype=np.int32)
+            
+            data_array = np.array(raw_data, dtype=np.int32)
+            # Palm: Custom mapping - data points fill column by column from bottom to top
+            matrix = data_array.reshape(cols, rows, order='C')
+            return matrix.T  # Transpose to get correct orientation
+        
+        # Handle finger sensors
+        if finger not in ['pinky', 'ring', 'middle', 'index', 'thumb']:
+            available_fingers = ['pinky', 'ring', 'middle', 'index', 'thumb', 'palm']
+            raise ValueError(f"Finger '{finger}' not found. Available fingers: {available_fingers}")
+        
+        # Validate position for finger sensors
+        if finger == 'thumb':
+            valid_positions = ['top', 'tip', 'mid', 'base']
+            if position not in valid_positions:
+                raise ValueError(f"Position '{position}' not valid for thumb. Available positions: {valid_positions}")
+        else:
+            valid_positions = ['top', 'tip', 'base']
+            if position not in valid_positions:
+                raise ValueError(f"Position '{position}' not valid for {finger}. Available positions: {valid_positions}")
+        
+        # Build register name
+        finger_upper = finger.upper()
+        position_upper = position.upper()
+        reg_name = f"{finger_upper}_{position_upper}_TAC"
+        
+        if reg_name not in self._regdict:
+            raise ValueError(f"Sensor register '{reg_name}' not found")
+        
+        address, shape = self._regdict[reg_name]
+        rows, cols = shape
+        total_elements = rows * cols
+        
+        raw_data = self._read_register(address, total_elements)
+        if len(raw_data) != total_elements:
+            self._logger.error(f"Failed to read complete tactile data for {finger}_{position}: expected {total_elements}, got {len(raw_data)}")
+            return np.array([], dtype=np.int32)
+        
+        data_array = np.array(raw_data, dtype=np.int32)
+        # Fingers: row-first ordering (data fills row by row, left to right)
+        matrix = data_array.reshape(rows, cols, order='C')  # Row-major (C-style)
+        
+        if self._debug:
+            self._logger.debug(f"Read {finger}_{position} tactile data: {shape} matrix from address {address}")
+        
+        return matrix
 
     def get_generation(self) -> int:
         """Get the hardware generation (3 or 4)"""

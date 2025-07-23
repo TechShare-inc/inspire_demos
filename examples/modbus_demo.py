@@ -121,6 +121,8 @@ class ModbusDemo:
         print("- Error status monitoring")
         print(f"Using connection: {self.ip}:{self.port}")
         
+        assert self.api is not None, "API not initialized. Please connect first."
+
         if not self.api:
             if not self.connect_to_hand():
                 return
@@ -162,6 +164,8 @@ class ModbusDemo:
         print("- Data dimensions")
         print("- Signal range analysis")
         print(f"Using connection: {self.ip}:{self.port}")
+        
+        assert self.api is not None, "API not initialized. Please connect first."
         
         if not self.api:
             if not self.connect_to_hand():
@@ -217,14 +221,14 @@ class ModbusDemo:
             
             # Palm sensor (largest)
             print("1. Palm sensor (8x14 matrix):")
-            palm_data = self.api.get_tactile_sensor_data('palm')
+            palm_data = self.api.get_tactile_data('palm')
             print(f"   Shape: {palm_data.shape}")
             print(f"   Data preview:\n{palm_data[:4, :7]}  # (showing first 4x7 section)")
             print(f"   Full range: [{palm_data.min()}, {palm_data.max()}], Mean: {palm_data.mean():.1f}")
             
             # Thumb tip sensor
             print("\n2. Thumb tip sensor (12x8 matrix):")
-            thumb_tip_data = self.api.get_tactile_sensor_data('thumb_tip')
+            thumb_tip_data = self.api.get_tactile_data('thumb', 'tip')
             print(f"   Shape: {thumb_tip_data.shape}")
             print(f"   Data preview:\n{thumb_tip_data[:4, :4]}  # (showing first 4x4 section)")
             print(f"   Full range: [{thumb_tip_data.min()}, {thumb_tip_data.max()}], Mean: {thumb_tip_data.mean():.1f}")
@@ -232,7 +236,7 @@ class ModbusDemo:
             # Index finger tip
             print("\n3. Index finger tip sensor:")
             try:
-                index_tip_data = self.api.get_tactile_sensor_data('index_tip')
+                index_tip_data = self.api.get_tactile_data('index', 'tip')
                 print(f"   Shape: {index_tip_data.shape}")
                 print(f"   Data:\n{index_tip_data}")
                 print(f"   Range: [{index_tip_data.min()}, {index_tip_data.max()}], Mean: {index_tip_data.mean():.1f}")
@@ -242,7 +246,7 @@ class ModbusDemo:
             # Pinky top (small sensor)
             print("\n4. Pinky top sensor (small, 3x3 matrix):")
             try:
-                pinky_top_data = self.api.get_tactile_sensor_data('pinky_top')
+                pinky_top_data = self.api.get_tactile_data('pinky', 'top')
                 print(f"   Shape: {pinky_top_data.shape}")
                 print(f"   Data:\n{pinky_top_data}")
                 print(f"   Range: [{pinky_top_data.min()}, {pinky_top_data.max()}], Mean: {pinky_top_data.mean():.1f}")
